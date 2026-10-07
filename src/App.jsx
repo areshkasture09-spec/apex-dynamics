@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Search, 
   Zap, 
-  Wind, 
   Settings2, 
   Cpu, 
   Clock, 
@@ -18,8 +17,6 @@ import {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- DATA LAYER ---
-
 const ARTICLES = [
   {
     id: 1,
@@ -28,7 +25,7 @@ const ARTICLES = [
     excerpt: "Modern tuning often obsesses over peak dyno numbers, but the distribution of mass dictates how a car rotates at the limit. We dive into the physics of centralizing mass.",
     readTime: "6 min",
     date: "OCT 07, 2024",
-    content: `Engineers often talk about 'balance,' but the mathematical reality of Polar Moment of Inertia (PMI) is what separates a nimble sports car from a high-horsepower muscle car. PMI measures an object's resistance to change in rotational speed. In automotive terms, if you concentrate the heavy components (engine, fuel tank, driver) between the axles, the car requires less force to initiate a turn. This is why a 300hp mid-engine Cayman can often outpace a 600hp front-engine sedan on technical circuits. We explore how suspension geometry interacts with these forces...`,
+    content: "Engineers often talk about balance, but the mathematical reality of Polar Moment of Inertia (PMI) is what separates a nimble sports car from a high-horsepower muscle car. PMI measures an object's resistance to change in rotational speed. In automotive terms, if you concentrate the heavy components (engine, fuel tank, driver) between the axles, the car requires less force to initiate a turn. This is why a 300hp mid-engine Cayman can often outpace a 600hp front-engine sedan on technical circuits.",
     specs: {
       "Ideal Ratio": "50:50 Static",
       "Yaw Rate": "High Response",
@@ -43,7 +40,7 @@ const ARTICLES = [
     excerpt: "The S58 and the GT3's 4.0L Flat-6 represent two different philosophies of speed. Which one provides the superior exit speed?",
     readTime: "8 min",
     date: "OCT 05, 2024",
-    content: "The modern turbocharged engine has virtually eliminated 'lag,' but it still cannot replicate the razor-sharp throttle modulation of a naturally aspirated high-revving unit. However, the torque plateau of an I6 allows for gear flexibility that keeps the chassis more stable through long sweepers...",
+    content: "The modern turbocharged engine has virtually eliminated lag, but it still cannot replicate the razor-sharp throttle modulation of a naturally aspirated high-revving unit. However, the torque plateau of an I6 allows for gear flexibility that keeps the chassis more stable through long sweepers.",
     specs: {
       "Induction": "Twin-Mono Scroll",
       "Redline": "7,200 - 9,000 RPM",
@@ -57,7 +54,7 @@ const ARTICLES = [
     excerpt: "The dark art of Venturi tunnels. How to suck the car to the pavement without the massive drag penalty of a GT3-style wing.",
     readTime: "10 min",
     date: "SEP 28, 2024",
-    content: "Airflow beneath the car is far more efficient than airflow over it. By creating a low-pressure zone using a flat floor and a steep diffuser, we create 'suction' that increases grip exponentially with speed...",
+    content: "Airflow beneath the car is far more efficient than airflow over it. By creating a low-pressure zone using a flat floor and a steep diffuser, we create suction that increases grip exponentially with speed.",
     specs: {
       "L/D Ratio": "4.5:1",
       "Downforce": "800kg @ 150mph",
@@ -71,7 +68,7 @@ const ARTICLES = [
     excerpt: "Testing the limits of a Torsen differential against modern brake-based vectoring systems in high-G transitions.",
     readTime: "5 min",
     date: "SEP 22, 2024",
-    content: "An e-diff can react in milliseconds, but many purists prefer the predictable lock-up of a mechanical unit. Our telemetry shows that brake-based systems generate excessive heat in 20-minute sessions...",
+    content: "An e-diff can react in milliseconds, but many purists prefer the predictable lock-up of a mechanical unit. Telemetry shows that brake-based systems generate excessive heat in 20-minute track sessions.",
     specs: {
       "Response Time": "15ms (E-Diff)",
       "Durability": "Infinite (Mech)",
@@ -85,7 +82,7 @@ const ARTICLES = [
     excerpt: "Can the modern ZF8 really keep up with a PDK? Analyzing shift speeds and transmission oil temperatures under load.",
     readTime: "7 min",
     date: "SEP 15, 2024",
-    content: "While the DCT offers instantaneous mechanical shifts, the planetary automatic has caught up in software logic while offering superior cooling for endurance racing...",
+    content: "While the DCT offers instantaneous mechanical shifts, the planetary automatic has caught up in software logic while offering superior cooling for endurance racing.",
     specs: {
       "Shift Speed": "80ms (DCT)",
       "Max Torque": "1000Nm+ (Auto)",
@@ -93,8 +90,6 @@ const ARTICLES = [
     }
   }
 ];
-
-// --- AI SERVICE ---
 
 const getGeminiResponse = async (prompt, apiKey) => {
   if (!apiKey) throw new Error("Missing API Key");
@@ -104,8 +99,6 @@ const getGeminiResponse = async (prompt, apiKey) => {
   return result.response.text();
 };
 
-// --- COMPONENTS ---
-
 export default function ApexDynamics() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,12 +106,10 @@ export default function ApexDynamics() {
   const [apiKey, setApiKey] = useState(import.meta.env?.VITE_GEMINI_API_KEY || "");
   const [showSettings, setShowSettings] = useState(false);
   
-  // Engine Decrypter State
   const [engineInput, setEngineInput] = useState("");
   const [engineResult, setEngineResult] = useState(null);
   const [isDecrypterLoading, setIsDecrypterLoading] = useState(false);
 
-  // Article AI Summary State
   const [aiSummary, setAiSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
 
@@ -137,14 +128,7 @@ export default function ApexDynamics() {
     if (!query) return;
     setIsDecrypterLoading(true);
     try {
-      const prompt = `Act as a senior race engineer. Analyze the car/engine: "${query}". 
-      Return a concise technical breakdown with these specific headers:
-      - ARCHITECTURE: (Displacement, cylinder count, layout)
-      - INDUCTION & OUTPUT: (Turbo/NA, power curves)
-      - MECHANICAL HIGHLIGHTS: (Crankshaft, oiling, internals)
-      - TRACK DURABILITY: (Known thermal or mechanical issues for track use)
-      Keep it professional, data-driven, and technical.`;
-      
+      const prompt = `Act as a senior race engineer. Analyze the car/engine: "${query}". Return concise technical breakdown: ARCHITECTURE, INDUCTION & OUTPUT, MECHANICAL HIGHLIGHTS, TRACK DURABILITY.`;
       const res = await getGeminiResponse(prompt, apiKey);
       setEngineResult(res);
     } catch (err) {
@@ -157,11 +141,11 @@ export default function ApexDynamics() {
   const handleSummarize = async (article) => {
     setIsSummarizing(true);
     try {
-      const prompt = `Provide 3 highly technical mechanical takeaways from this article content: "${article.content}". Keep them as bullet points for a professional automotive engineer.`;
+      const prompt = `Provide 3 highly technical mechanical takeaways from this article: "${article.content}". Keep them as concise bullet points.`;
       const res = await getGeminiResponse(prompt, apiKey);
       setAiSummary(res);
     } catch (err) {
-      setAiSummary("Failed to generate summary. Ensure your API key is correct.");
+      setAiSummary("Failed to generate summary. Verify your API key.");
     } finally {
       setIsSummarizing(false);
     }
@@ -169,7 +153,6 @@ export default function ApexDynamics() {
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-slate-100 font-sans selection:bg-blue-500/30">
-      {/* Navigation */}
       <nav className="sticky top-0 z-40 bg-[#0B0F17]/80 backdrop-blur-md border-b border-white/5 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
@@ -185,14 +168,14 @@ export default function ApexDynamics() {
               <input 
                 type="text"
                 placeholder="Search engineering logs..."
-                className="w-full bg-slate-900/50 border border-white/10 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-slate-900/50 border border-white/10 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <button 
               onClick={() => setShowSettings(!showSettings)}
-              className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400"
+              className="p-2 hover:bg-slate-800 rounded-full text-slate-400"
             >
               <Settings size={20} />
             </button>
@@ -200,16 +183,13 @@ export default function ApexDynamics() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        
-        {/* Category Selector */}
         <div className="flex flex-wrap gap-2 mb-10">
           {["All", "Powertrains", "Chassis & Aero", "Track Testing"].map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
+              className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
                 activeCategory === cat 
                 ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]" 
                 : "bg-slate-900 text-slate-400 border border-white/5 hover:border-white/20"
@@ -221,34 +201,30 @@ export default function ApexDynamics() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Feed Column */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Hero Card */}
-            {activeCategory === "All" && !searchQuery && (
+            {activeCategory === "All" && !searchQuery && featuredArticle && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="group relative h-[450px] rounded-2xl overflow-hidden border border-white/10 cursor-pointer"
                 onClick={() => setSelectedArticle(featuredArticle)}
               >
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80')] bg-cover bg-center group-hover:scale-105 transition-transform duration-700 opacity-60" />
+                <div className="absolute inset-0 bg-slate-800 group-hover:scale-105 transition-transform duration-700 opacity-60" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/40 to-transparent" />
                 <div className="absolute bottom-0 p-8 w-full">
                   <div className="flex gap-3 mb-4">
                     <span className="px-3 py-1 bg-blue-600 text-[10px] font-bold uppercase rounded-sm">Featured</span>
                     <span className="flex items-center gap-1 text-[10px] text-slate-300 uppercase tracking-widest"><Clock size={12} /> {featuredArticle.readTime}</span>
                   </div>
-                  <h2 className="text-4xl font-bold mb-4 leading-tight max-w-2xl">{featuredArticle.title}</h2>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight max-w-2xl">{featuredArticle.title}</h2>
                   <p className="text-slate-300 text-sm max-w-xl mb-6 line-clamp-2">{featuredArticle.excerpt}</p>
-                  <button className="flex items-center gap-2 text-blue-400 font-bold text-sm uppercase tracking-wider group-hover:gap-4 transition-all">
+                  <button className="flex items-center gap-2 text-blue-400 font-bold text-sm uppercase tracking-wider">
                     Read Analysis <ChevronRight size={18} />
                   </button>
                 </div>
               </motion.div>
             )}
 
-            {/* Grid Feed */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {filteredArticles.filter(a => !a.featured || activeCategory !== "All").map((article, idx) => (
                 <motion.div 
@@ -266,7 +242,7 @@ export default function ApexDynamics() {
                   </div>
                   <div className="flex justify-between items-center pt-4 border-t border-white/5">
                     <span className="text-[10px] text-slate-500 font-medium">{article.date}</span>
-                    <span className="text-xs font-bold text-slate-300 flex items-center gap-1 group">
+                    <span className="text-xs font-bold text-slate-300 flex items-center gap-1">
                       READ <Maximize2 size={12} className="text-blue-500" />
                     </span>
                   </div>
@@ -275,9 +251,7 @@ export default function ApexDynamics() {
             </div>
           </div>
 
-          {/* Sidebar / Tools */}
           <div className="space-y-6">
-            {/* Decrypter Tool */}
             <div className="bg-[#151B27] border border-blue-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <Cpu size={80} className="text-blue-500" />
@@ -288,14 +262,14 @@ export default function ApexDynamics() {
                 Engine Decrypter
               </h3>
               <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                Enter any engine code or model for a senior race engineer's technical breakdown.
+                Enter any engine code or car model for a senior race engineer's technical breakdown.
               </p>
 
               <div className="space-y-4">
                 <input 
                   type="text"
-                  placeholder="e.g. Porsche 9A1.5, BMW S58..."
-                  className="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-4 text-sm focus:outline-none focus:border-blue-500 transition-all"
+                  placeholder="e.g. BMW S58, Porsche 4.0L NA..."
+                  className="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-4 text-sm focus:outline-none focus:border-blue-500"
                   value={engineInput}
                   onChange={(e) => setEngineInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleEngineDecryption()}
@@ -320,7 +294,7 @@ export default function ApexDynamics() {
                     <button 
                       key={chip}
                       onClick={() => handleEngineDecryption(chip)}
-                      className="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-blue-900/40 transition-colors"
+                      className="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-blue-900/40"
                     >
                       {chip}
                     </button>
@@ -341,7 +315,6 @@ export default function ApexDynamics() {
               )}
             </div>
 
-            {/* Quick Stats Card */}
             <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-6">
               <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Track Telemetry Overview</h4>
               <div className="space-y-4">
@@ -361,7 +334,6 @@ export default function ApexDynamics() {
         </div>
       </main>
 
-      {/* Article Modal */}
       <AnimatePresence>
         {selectedArticle && (
           <motion.div 
@@ -382,11 +354,10 @@ export default function ApexDynamics() {
               animate={{ scale: 1, y: 0 }}
               className="relative w-full max-w-5xl h-full max-h-[90vh] bg-slate-900 border border-white/10 rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-2xl"
             >
-              {/* Sidebar Info */}
               <div className="w-full md:w-80 bg-black/40 border-r border-white/5 p-8 overflow-y-auto shrink-0">
                 <button 
                   onClick={() => setSelectedArticle(null)}
-                  className="mb-8 p-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors"
+                  className="mb-8 p-2 bg-slate-800 rounded-full hover:bg-slate-700"
                 >
                   <X size={20} />
                 </button>
@@ -409,10 +380,31 @@ export default function ApexDynamics() {
                   <button 
                     onClick={() => handleSummarize(selectedArticle)}
                     disabled={isSummarizing || !apiKey}
-                    className="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 border border-indigo-500/30 font-bold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 border border-indigo-500/30 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2"
                   >
                     {isSummarizing ? <Loader2 className="animate-spin" size={14} /> : <Activity size={14} />}
                     AI Engineering Summary
                   </button>
                   {aiSummary && (
-                    <div className="mt-4 p-4 bg-indigo-500/5 rounded-lg
+                    <div className="mt-4 p-4 bg-indigo-500/5 rounded-lg text-xs leading-relaxed text-indigo-200/80 italic border-l-2 border-indigo-500">
+                      {aiSummary}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto bg-[#0B0F17] p-8 md:p-12">
+                <div className="max-w-2xl mx-auto">
+                  <div className="flex items-center gap-4 text-slate-500 text-xs mb-8">
+                    <span>{selectedArticle.date}</span>
+                    <span>•</span>
+                    <span>{selectedArticle.readTime} reading</span>
+                  </div>
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-xl text-slate-300 leading-relaxed font-serif italic mb-8">
+                      {selectedArticle.excerpt}
+                    </p>
+                    <div className="space-y-6 text-slate-400 leading-8">
+                      <p>{selectedArticle.content}</p>
+                      <div className="bg-slate-900 p-6 rounded-xl border border-white/5 mt-10">
+                        <h4 className="text-slate-200 font-bold mb-2 
