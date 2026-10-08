@@ -141,7 +141,7 @@ const ARTICLES = [
     secondaryKeywords: ["dual clutch transmission shift speed", "zf 8-speed automatic racing"],
     metaTitle: "DCT vs Torque Converter Automatics on Track | Apex Dynamics Drivetrain",
     metaDesc: "Examine whether modern multi-clutch planetary automatics can surpass dual-clutch gearboxes under severe circuit track conditions.",
-    image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=800&q=75",,
+    image: "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=800&q=75",
     imageAlt: "Cockpit paddle shifters and central transmission console in an endurance race car",
     excerpt: "Can modern torque converter automatics match dual-clutch gearboxes under sustained track punishment?",
     readTime: "8 min",
