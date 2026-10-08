@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Zap, Settings2, Cpu, Clock, ChevronRight, ArrowLeft, Activity, Maximize2, Settings, Loader2 } from 'lucide-react';
+import { Search, Zap, Settings2, Cpu, Clock, ChevronRight, ArrowLeft, Activity, Maximize2, Settings, Loader2, Info } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const ARTICLES = [
@@ -335,7 +335,7 @@ const callGemini = async (prompt, apiKey) => {
 };
 
 export default function ApexDynamics() {
-  const [currentRoute, setCurrentRoute] = useState(window.location.hash || '#/');
+  const [currentRoute, setCurrentRoute] = useState(window.location.hash || '');
   const [cat, setCat] = useState("All");
   const [search, setSearch] = useState("");
   const [apiKey, setApiKey] = useState(import.meta.env?.VITE_GEMINI_API_KEY || "");
@@ -346,10 +346,9 @@ export default function ApexDynamics() {
   const [summary, setSummary] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
 
-  // Sync hash routing with window state
   useEffect(() => {
     const handleHashChange = () => {
-      setCurrentRoute(window.location.hash || '#/');
+      setCurrentRoute(window.location.hash || '');
       window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -360,17 +359,12 @@ export default function ApexDynamics() {
     window.location.hash = path;
   };
 
-  // Determine current active article from hash route
   const activeArticle = useMemo(() => {
-    const match = currentRoute.match(/^#\/articles\/(.+)$/);
-    if (match) {
-      const slug = match[1];
-      return ARTICLES.find(a => a.slug === slug) || null;
-    }
-    return null;
+    if (!currentRoute.startsWith('#/articles/')) return null;
+    const slug = currentRoute.replace('#/articles/', '');
+    return ARTICLES.find(a => a.slug === slug) || null;
   }, [currentRoute]);
 
-  // Update dynamic Title & Meta Description tags for SEO
   useEffect(() => {
     let title = "Apex Dynamics | Motorsport Engineering Telemetry & Powertrain Journal";
     let desc = "Apex Dynamics is a technical automotive engineering publication breaking down chassis kinematics, powertrain performance, and aerodynamics.";
@@ -426,12 +420,11 @@ export default function ApexDynamics() {
 
   return (
     <div className="min-h-screen bg-[#0B0F17] text-slate-100 font-sans selection:bg-blue-600/40">
-      {/* Navigation Header */}
       <nav className="sticky top-0 z-30 bg-[#0B0F17]/95 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
         <a 
           href="#/" 
-          onClick={(e) => { e.preventDefault(); navigateTo('#/'); }}
-          className="flex items-center gap-2 group text-inherit no-underline"
+          onClick={(e) => { e.preventDefault(); navigateTo(''); }}
+          className="flex items-center gap-2 group text-inherit no-underline cursor-pointer"
           title="Apex Dynamics Homepage"
         >
           <div className="w-8 h-8 bg-blue-600 flex items-center justify-center -rotate-12 rounded group-hover:bg-blue-500 transition-colors">
@@ -460,17 +453,14 @@ export default function ApexDynamics() {
         </div>
       </nav>
 
-      {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         {activeArticle ? (
-          /* Dedicated Article Page (3.i Unique URL View) */
           <article className="max-w-4xl mx-auto bg-slate-900/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-            {/* Top Anchor Link */}
             <div className="p-4 border-b border-white/5 bg-slate-950/40 flex justify-between items-center">
               <a 
                 href="#/" 
-                onClick={(e) => { e.preventDefault(); navigateTo('#/'); }}
-                className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5"
+                onClick={(e) => { e.preventDefault(); navigateTo(''); }}
+                className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5 cursor-pointer no-underline"
                 title="Return to Apex Dynamics Homepage"
               >
                 <ArrowLeft size={14} /> Back to Telemetry Hub
@@ -478,13 +468,11 @@ export default function ApexDynamics() {
               <span className="text-[11px] font-mono text-slate-400">{activeArticle.date}</span>
             </div>
 
-            {/* Optimized Article Header Image */}
             <div className="h-72 md:h-96 relative w-full overflow-hidden">
               <img 
                 src={activeArticle.image} 
                 alt={activeArticle.imageAlt} 
                 className="w-full h-full object-cover"
-                loading="eager"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
             </div>
@@ -493,7 +481,6 @@ export default function ApexDynamics() {
               <span className="text-xs text-blue-400 font-bold uppercase tracking-wider block mb-2">{activeArticle.category}</span>
               <h1 className="text-2xl md:text-4xl font-black mb-4 leading-tight">{activeArticle.title}</h1>
 
-              {/* Technical Specifications Matrix */}
               <div className="grid grid-cols-3 gap-3 bg-black/40 p-4 rounded-xl mb-8 border border-white/5">
                 {Object.entries(activeArticle.specs).map(([k, v]) => (
                   <div key={k}>
@@ -503,14 +490,12 @@ export default function ApexDynamics() {
                 ))}
               </div>
 
-              {/* In-Depth Article Content */}
               <div className="space-y-6 text-slate-300 text-sm md:text-base leading-relaxed mb-10">
                 {activeArticle.paragraphs.map((p, i) => (
                   <p key={i}>{p}</p>
                 ))}
               </div>
 
-              {/* AEO Question & Answer Section */}
               <section className="bg-slate-950/80 border border-blue-500/20 rounded-xl p-6 mb-10">
                 <h2 className="text-lg md:text-xl font-bold text-white mb-6 flex items-center gap-2">
                   <Info size={18} className="text-blue-400" /> Engineering FAQ: Critical Principles
@@ -525,7 +510,6 @@ export default function ApexDynamics() {
                 </div>
               </section>
 
-              {/* Gemini AI Summary Generator */}
               <div className="bg-black/40 p-5 rounded-xl border border-white/5">
                 <button 
                   onClick={() => summarize(activeArticle.paragraphs)} 
@@ -544,9 +528,7 @@ export default function ApexDynamics() {
             </div>
           </article>
         ) : (
-          /* Homepage View */
           <div>
-            {/* Category Filter Pills */}
             <div className="flex flex-wrap gap-2 mb-8">
               {["All", "Powertrains", "Chassis & Aero", "Track Testing"].map(c => (
                 <button 
@@ -562,9 +544,7 @@ export default function ApexDynamics() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Articles Column */}
               <div className="lg:col-span-2 space-y-8">
-                {/* Featured Hero Article */}
                 {cat === "All" && !search && featured && (
                   <div 
                     onClick={() => navigateTo(`#/articles/${featured.slug}`)} 
@@ -574,7 +554,6 @@ export default function ApexDynamics() {
                       src={featured.image} 
                       alt={featured.imageAlt} 
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-50"
-                      loading="eager"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/60 to-transparent" />
                     <div className="relative z-10">
@@ -588,18 +567,13 @@ export default function ApexDynamics() {
                       <p className="text-slate-300 text-xs md:text-sm line-clamp-2 max-w-xl mb-4">
                         {featured.excerpt}
                       </p>
-                      <a 
-                        href={`#/articles/${featured.slug}`} 
-                        className="text-blue-400 text-xs font-bold flex items-center gap-1 uppercase tracking-wider group-hover:gap-2 transition-all no-underline"
-                        title="Read full article on Polar Moment of Inertia"
-                      >
+                      <span className="text-blue-400 text-xs font-bold flex items-center gap-1 uppercase tracking-wider group-hover:gap-2 transition-all">
                         Read In-Depth Analysis on Weight Distribution <ChevronRight size={14} />
-                      </a>
+                      </span>
                     </div>
                   </div>
                 )}
 
-                {/* Article Grid with Keyword Anchors */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {filtered.filter(a => !a.featured || cat !== "All").map(art => (
                     <div 
@@ -612,7 +586,6 @@ export default function ApexDynamics() {
                           src={art.image} 
                           alt={art.imageAlt} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent" />
                         <span className="absolute bottom-3 left-3 text-[10px] font-bold text-blue-400 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 uppercase tracking-wider">
@@ -630,20 +603,15 @@ export default function ApexDynamics() {
                         </div>
                         <div className="flex justify-between items-center pt-3 border-t border-white/5 text-[11px] text-slate-500">
                           <span>{art.date}</span>
-                          <a 
-                            href={`#/articles/${art.slug}`} 
-                            className="text-blue-400 font-bold flex items-center gap-1 text-[10px] uppercase hover:underline"
-                            title={`Read engineering analysis for ${art.title}`}
-                          >
+                          <span className="text-blue-400 font-bold flex items-center gap-1 text-[10px] uppercase">
                             Read Full Telemetry Log <Maximize2 size={12} />
-                          </a>
+                          </span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Homepage AEO Q&A Section */}
                 <section className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 space-y-6">
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <Info size={18} className="text-blue-400" /> Frequently Asked Motorsport Engineering Questions
@@ -665,9 +633,7 @@ export default function ApexDynamics() {
                 </section>
               </div>
 
-              {/* Sidebar Tools */}
               <div className="space-y-6">
-                {/* Engine Decrypter AI Box */}
                 <div className="bg-[#151B27] border border-blue-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                   <div className="absolute -top-4 -right-4 opacity-10">
                     <Cpu size={100} className="text-blue-500" />
@@ -711,7 +677,6 @@ export default function ApexDynamics() {
                   )}
                 </div>
 
-                {/* Track Telemetry Widget */}
                 <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6">
                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Live Track Telemetry Baseline</h4>
                   <div className="space-y-3 text-xs">
@@ -739,9 +704,8 @@ export default function ApexDynamics() {
         )}
       </main>
 
-      {/* Settings Modal */}
       {settingsOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
             <h3 className="font-bold text-base mb-4 flex items-center gap-2"><Settings size={18} /> API Settings</h3>
             <label className="text-xs text-slate-400 block mb-2 font-bold uppercase">Gemini API Key</label>
@@ -762,7 +726,6 @@ export default function ApexDynamics() {
         </div>
       )}
 
-      {/* Footer */}
       <footer className="border-t border-white/5 py-8 text-center text-xs text-slate-500 mt-16">
         APEX DYNAMICS &copy; Performance Engineering Editorial
       </footer>
